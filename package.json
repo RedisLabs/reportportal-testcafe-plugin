@@ -2,6 +2,7 @@
   "name": "testcafe-reporter-reportportal-plugin",
   "version": "0.0.11",
   "private": false,
+
   "description": "Report Portal TestCafe reporter",
   "repository": "https://github.com/redislabs/reportportal-testcafe-plugin",
   "publishConfig": {
