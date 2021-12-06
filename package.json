@@ -1,4 +1,5 @@
 {
+
   "name": "@redislabs/testcafe-reporter-redis-reportportal-plugin",
   "version": "0.0.11",
   "private": false,
