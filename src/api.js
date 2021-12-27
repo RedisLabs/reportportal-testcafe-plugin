@@ -15,6 +15,7 @@ class API {
             baseURL: this.baseURL,
             headers: this.headers,
         });
+        
         this._debug = false;
     }
 
