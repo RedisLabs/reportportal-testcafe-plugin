@@ -322,10 +322,7 @@ class API {
         const responseData = error.response && error.response.data;
         throw new Error(
             `${errorMessage}${
-                responseData && typeof responseData === "object"
-                    ? `: ${JSON.stringify(responseData)}`
-                    : ""
-            }`
+                responseData && typeof responseData === "object"? `: ${JSON.stringify(responseData)}`: ""}`
         );
     }
 }
