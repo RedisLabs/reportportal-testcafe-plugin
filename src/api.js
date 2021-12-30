@@ -1,10 +1,13 @@
 const axios = require("axios");
+
 const fs = require("fs");
+
 const path = require("path");
+
 const filename = path.basename(__filename);
 
 class API {
-    constructor(options,debug) {
+    constructor(options, debug) {
         this.baseURL = `${options.protocol}://${options.domain}${options.apiPath}`;
         this.token = options.token;
         this.headers = {
@@ -21,24 +24,30 @@ class API {
     /**
      * Checking the connection to the report portal server
      */
+
     async checkConnect() {
-        if (this._debug == true)
+        if (this._debug == true) {
             process.stdout.write("[" + filename + "] check connect: /user\n");
+        }
+
         try {
             return this.handleResponse(await this.client.get("/user"));
         } catch (error) {
             return this.handleError(error);
         }
     }
-
     /**
      * Creating a launch
      * @param {*} projectName The name of the project
      * @param {*} options The options of the launch
      */
+
     async createLaunch(projectName, options) {
-        if (this._debug == true)
-            process.stdout.write(`[${filename}] createLaunch: /${projectName}/launch\n`);
+        if (this._debug == true) {
+            process.stdout
+                .write(`[${filename}] createLaunch:post /${projectName}/launch\n 
+                with options: ${JSON.stringify(options)}`);
+        }
         try {
             return this.handleResponse(
                 await this.client.post(`/${projectName}/launch`, options)
@@ -47,18 +56,20 @@ class API {
             return this.handleError(error);
         }
     }
-
     /**
      * Finishing an existing launch
      * @param {*} projectName The name of the project
      * @param {*} launchId The id of the launch
      * @param {*} options The options of the launch
      */
+
     async finishLaunch(projectName, launchId, options) {
-        if (this._debug == true)
-            process.stdout.write(
-                `[${filename}] finishLaunch: ${projectName}/launch/${launchId}/finish\n`
-            );
+        if (this._debug == true) {
+            process.stdout
+                .write(`[${filename}] finishLaunch:put ${projectName}/launch/${launchId}/finish\n 
+                with options: ${JSON.stringify(options)} \n 
+                with launchId: ${JSON.stringify(launchId)}`);
+        }
         try {
             return this.handleResponse(
                 await this.client.put(
@@ -70,18 +81,20 @@ class API {
             return this.handleError(error);
         }
     }
-
     /**
      * Force stoping a launch
      * @param {*} projectName The name of the project
      * @param {*} launchId The id of the launch
      * @param {*} options The options of the launch
      */
+
     async forceStopLaunch(projectName, launchId, options) {
-        if (this._debug == true)
-            process.stdout.write(
-                `[${filename}]forceStopLaunch: /launch/${launchId}/stop\n`
-            );
+        if (this._debug == true) {
+            process.stdout
+                .write(`[${filename}]forceStopLaunch:put /launch/${launchId}/stop\n 
+                with options: ${JSON.stringify(options)}\n 
+                with launchId: ${JSON.stringify(launchId)}`);
+        }
         try {
             return this.handleResponse(
                 await this.client.put(
@@ -93,17 +106,19 @@ class API {
             return this.handleError(error);
         }
     }
-
     /**
      * Creating a test item
      * @param {*} projectName The name of the project
      * @param {*} options The options of the launch
      */
+
     async createTestItem(projectName, options) {
-        if (this._debug == true)
-            process.stdout.write(
-                `[${filename}]launch:${options.launchUuid} createTestItem: /${projectName}/item\n`
-            );
+        if (this._debug == true) {
+            process.stdout.write(`[${filename}]launch:${
+                options.launchUuid
+            } createTestItem:post  /${projectName}/item\n 
+            with options: ${JSON.stringify(options)}`);
+        }
         try {
             return this.handleResponse(
                 await this.client.post(`/${projectName}/item`, options)
@@ -112,18 +127,21 @@ class API {
             return this.handleError(error);
         }
     }
-
     /**
      * Creating a child test item
      * @param {*} projectName The name of the project
      * @param {*} parentItem The parent item of the test item
      * @param {*} options The options of the child test item
      */
+
     async createChildTestItem(projectName, parentItem, options) {
-        if (this._debug == true)
-            process.stdout.write(
-                `[${filename}]launch:${options.launchUuid} createChildTestItem ${options.name} parent:${parentItem} time:${this.now()}\n`
-            );
+        if (this._debug == true) {
+            process.stdout.write(`[${filename}]launch:${
+                options.launchUuid
+            } createChildTestItem:post /${projectName}/item/${parentItem}\n
+            with options: ${JSON.stringify(options)}\n 
+            time:${this.now()}\n`);
+        }
         try {
             return this.handleResponse(
                 await this.client.post(
@@ -135,18 +153,20 @@ class API {
             return this.handleError(error);
         }
     }
-
     /**
      * Finishing a test item
      * @param {*} projectName The name of the project
      * @param {*} testItemId The id of the test item
      * @param {*} options The options of the test item
      */
+
     async finishTestItem(projectName, testItemId, options) {
-        if (this._debug == true)
-            process.stdout.write(
-                `[${filename}]launch:${options.launchUuid} finishTestItem: /item/${testItemId} status:${options.status}\n`
-            );
+        if (this._debug == true) {
+            process.stdout.write(`[${filename}]launch:${
+                options.launchUuid
+            } finishTestItem:put /${projectName}/item/${testItemId}\n
+                with options: ${JSON.stringify(options)}\n `);
+        }
         try {
             return this.handleResponse(
                 await this.client.put(
@@ -158,20 +178,19 @@ class API {
             return this.handleError(error);
         }
     }
-
     /**
      * Building a multi part stream (JSON + file)
      * @param {*} jsonPart The JSON object of the stream
      * @param {*} filePart The file of the stream
      * @param {*} boundary The boundary of the stream
      */
-    buildMultiPartStream(jsonPart, filePart, boundary) {
-        if (this._debug == true)
-            process.stdout.write(`[${filename}]enter buildMultiPartStream \n`);
 
+    buildMultiPartStream(jsonPart, filePart, boundary) {
+        if (this._debug == true) {
+            process.stdout.write(`[${filename}]enter buildMultiPartStream \n`);
+        }
         const eol = "\r\n";
         const bx = `--${boundary}`;
-
         const buffers = [
             Buffer.from(
                 /* eslint-disable */
@@ -197,13 +216,13 @@ class API {
                     filePart.type +
                     eol +
                     eol
-            ) /* eslint-disable */,
+            ),
+            /* eslint-disable */
             Buffer.from(filePart.content, "base64"),
             Buffer.from(`${eol + bx}--${eol}`),
         ];
         return Buffer.concat(buffers);
     }
-
     /**
      * Sending logs to a test item
      * @param {*} projectName The name of the project
@@ -212,13 +231,20 @@ class API {
      * 1. json file with specific format:file,itemId,level,message,time
      * 2. all files to upload(file names should match file names from part 1)
      */
+
     async sendLog(projectName, options) {
         if (options !== undefined) {
             try {
-                if (this._debug == true)
-                    process.stdout.write(`[${filename}]enter sendLog under: ${options.itemUuid} time:${this.now()}\n`);
+                if (this._debug == true) {
+                    process.stdout.write(
+                        `[${filename}]enter sendLog under: ${
+                            options.itemUuid
+                        } time:${this.now()}\n`
+                    );
+                }
                 if (typeof options.message !== "string")
                     options.message = `${options.message}`;
+
                 if (
                     options.file !== undefined &&
                     options.file.path !== undefined
@@ -233,9 +259,8 @@ class API {
                             "Content-type": `multipart/form-data; boundary=${MULTIPART_BOUNDARY}`,
                             Authorization: `Bearer ${this.token}`,
                         },
-                    });
+                    }); //request body
 
-                    //request body
                     await instance.post(
                         `${this.baseURL}/${projectName}/log`,
                         this.buildMultiPartStream(
@@ -261,38 +286,45 @@ class API {
             }
         }
     }
-
     /**
      * Retrieving the timestamp right now
      */
+
     now() {
         return new Date().valueOf();
     }
-
     /**
      * Handling an Axios response
      * @param {*} response The object of the response
      */
+
     handleResponse(response) {
-        if (this._debug == true){
-            process.stdout.write(`[${filename}] handle reponse\n`);
+        if (this._debug == true) {
+            process.stdout.write(
+                `\n[${filename}] handle reponse:${JSON.stringify(
+                    response.data
+                )}\n with status: ${response.status}\n`
+            );
         }
+
         return response.data;
     }
-
     /**
      * Handling an Axios error
      * @param {*} error The error response
      */
+
     handleError(error) {
-        if (this._debug == true)
+        if (this._debug == true) {
             process.stdout.write(`[${filename}] handleERROR: ${error}\n`);
+        }
         const errorMessage = error.message;
         const responseData = error.response && error.response.data;
-
         throw new Error(
             `${errorMessage}${
-                responseData && typeof responseData === "object" ? `: ${JSON.stringify(responseData)}` : ""
+                responseData && typeof responseData === "object"
+                    ? `: ${JSON.stringify(responseData)}`
+                    : ""
             }`
         );
     }
