@@ -81,7 +81,7 @@ class LogManager {
                 if (condition() || timeWaited > timeout) {
                     process.stdout.write(`This is the time we waited ${timeWaited}`);
                     if (timeWaited > timeout) {
-                        process.stdout.write(`We are riched the timeout ${timeout}`);
+                        process.stdout.write(`Timeout has reached ${timeout}`);
                     }
                     clearInterval(interval);
                     resolve();
