@@ -201,6 +201,11 @@ class ReportPortal {
      */
 
     async _startStep(time, name = "'->") {
+
+        // Adding gard of the lentgh of the group name 
+        if (name.length > 120) {
+            name = name.substring(0, 120);
+          }
         const options = {
             launchUuid: this.launch.id,
             name: name,
