@@ -128,15 +128,30 @@ class ReportPortal {
     async _startFixturePreTest(time, name = "Before Test") {
         //need to close former fixture
         await this._finishFixture(time);
-
+        let fixtureDescription;
+        let hasAttribute = false;
+        let options;
+        if(name !== "Before Test"){
+            fixtureDescription = `
+                    ${name.split("\n").map(attr =>{
+                    return `* ${attr} \n`;
+                    })}
+                `.replace(/\n,/g,"\n");
+            name = name.split("\n")[0];
+            hasAttribute = true;
+        }
+        
         if (this.launch !== undefined && this.launch.id !== undefined) {
-            const options = {
+            options = {
                 launchUuid: this.launch.id,
                 name: name,
                 startTime: time,
-                type: "before_test",
+                type: "before_test"
             };
-            if (this.suiteName)
+        if (hasAttribute){
+            options.description = fixtureDescription;
+        }
+        if (this.suiteName)
                 this._fixture = await this.client.createChildTestItem(
                     this.projectName,
                     this.suite.id,
@@ -152,8 +167,9 @@ class ReportPortal {
                 process.stdout.write(
                     `[${filename}] startFixturePreTest ${this._fixture.id} \n`
                 );
+        
         }
-    }
+      }
 
     /**
      * Starting a new test
