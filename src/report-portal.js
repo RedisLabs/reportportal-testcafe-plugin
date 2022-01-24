@@ -15,6 +15,7 @@ class ReportPortal {
         if (!cliArguments.rproject)
             throw new Error("Missing argument --rproject");
 
+       
         this.connected = true;
         this._itemsIds = []; //stack of parents
         this.launchName = cliArguments.rlaunch;
@@ -24,23 +25,18 @@ class ReportPortal {
             this._suiteStatus = "passed";
         }
         this._fixture = undefined;
-        this._debug = cliArguments.rdebug === "true" ? true : false;
+        this._debug = ( cliArguments.rdebug === "true")? true:false;
         this._queue = []; //msgs queue
         this._waitingForReply = false;
         this._testStatus = "passed";
         this._completedLaunch = false;
 
-        this.client = new RPClient(
-            {
-                protocol: cliArguments.rprotocol
-                    ? cliArguments.rprotocol
-                    : "https",
-                domain: cliArguments.rdomain,
-                apiPath: "/api/v1", //synchronous api
-                token: cliArguments.rtoken,
-            },
-            this._debug
-        );
+        this.client = new RPClient({
+            protocol: cliArguments.rprotocol ? cliArguments.rprotocol : "https",
+            domain: cliArguments.rdomain,
+            apiPath: "/api/v1", //synchronous api
+            token: cliArguments.rtoken,
+        },this._debug);
     }
 
     //Verifying the connection to Report Portal
@@ -70,42 +66,35 @@ class ReportPortal {
             this._completedLaunch = false;
         } else this.launch = { id: cliArguments["rlaunch-id"] };
 
-        // Adding suite with the attributes
-        const launchAttributes = await this.client.getLaunchAttributes(
-            this.projectName,
-            this.launch.id
-        );
-        const FFaddingLaunchInfo = false;
-        if (FFaddingLaunchInfo) {
-            if (launchAttributes.length > 0) {
-                const suiteDescription = `
-            ${launchAttributes.map((attr) => {
-                return `* ${attr.key}: ${attr.value} \n`;
+    // Adding suite with the attributes
+    const launchAttributes = await this.client.getLaunchAttributes(this.projectName, this.launch.id);
+    const FFaddingLaunchInfo = false;
+    if (FFaddingLaunchInfo){
+        if(launchAttributes.length > 0 ){
+            const suiteDescription = `
+            ${launchAttributes.map(attr =>{
+              return `* ${attr.key}: ${attr.value} \n`;
             })}
-          `.replace(/\n,/g, "\n");
-
-                const launchInfoSuite = await this.client.createTestItem(
-                    this.projectName,
-                    {
-                        launchUuid: this.launch.id,
-                        name: "Launch Info:",
-                        startTime: time,
-                        description: suiteDescription,
-                        type: "SUITE",
-                    }
-                );
-
-                await this.client.finishTestItem(
-                    this.projectName,
-                    launchInfoSuite.id,
-                    {
-                        launchUuid: this.launch.id,
-                        status: "passed",
-                        endTime: time,
-                    }
-                );
-            }
+          `.replace(/\n,/g,"\n");
+      
+          const launchInfoSuite  = await this.client.createTestItem(this.projectName, {
+            launchUuid: this.launch.id,
+            name: "Launch Info:",
+            startTime: time,
+            description: suiteDescription,
+            type: "SUITE"
+          });
+      
+          await this.client.finishTestItem(this.projectName, launchInfoSuite.id, {
+            launchUuid: this.launch.id,
+            status: "passed",
+            endTime: time
+          });
+      
         }
+    }    
+    
+   
 
         this._itemsIds.push({ type: "LAUNCH", id: this.launch.id });
         if (this._debug == true)
@@ -141,58 +130,46 @@ class ReportPortal {
         await this._finishFixture(time);
         let fixtureDescription;
         let hasAttribute = false;
-        if (name !== "Before Test") {
-            fixtureDescription = `
-                ${name.split("\n").map((attr) => {
-                    return `* ${attr} \n`;
+        if(name !== "Before Test"){
+    
+          fixtureDescription = `
+                ${name.split("\n").map(attr =>{
+                  return `* ${attr} \n`;
                 })}
-              `.replace(/\n,/g, "\n");
-            name = name.split("\n")[0];
-            hasAttribute = true;
+              `.replace(/\n,/g,"\n");
+          name = name.split("\n")[0]
+          hasAttribute = true;
         }
-
+        
         if (this.launch !== undefined && this.launch.id !== undefined) {
-            let options;
-            if (hasAttribute) {
-                options = {
-                    launchUuid: this.launch.id,
-                    name: name,
-                    startTime: time,
-                    description: fixtureDescription,
-                    type: "before_test",
-                };
-            } else {
-                options = {
-                    launchUuid: this.launch.id,
-                    name: name,
-                    startTime: time,
-                    type: "before_test",
-                };
-            }
-
-            if (this.suiteName)
-                this._fixture = await this.client.createChildTestItem(
-                    this.projectName,
-                    this.suite.id,
-                    options
-                );
-            else
-                this._fixture = await this.client.createTestItem(
-                    this.projectName,
-                    options
-                );
-
-            this._itemsIds.push({
-                type: "FIXTURE",
-                id: this._fixture.id,
-            });
-
-            if (this._debug == true)
-                process.stdout.write(
-                    `[${filename}] startFixturePreTest ${this._fixture.id} \n`
-                );
+          let options
+          if (hasAttribute){
+            options = {
+              launchUuid: this.launch.id,
+              name: name,
+              startTime: time,
+              description:fixtureDescription,
+              type: "before_test"
+            };
+          }else {
+            options = {
+              launchUuid: this.launch.id,
+              name: name,
+              startTime: time,
+              type: "before_test"
+            };
+          }
+        
+          if (this.suiteName) this._fixture = await this.client.createChildTestItem(this.projectName, this.suite.id, options);else this._fixture = await this.client.createTestItem(this.projectName, options);
+    
+          this._itemsIds.push({
+            type: "FIXTURE",
+            id: this._fixture.id
+          });
+    
+          if (this._debug == true) process.stdout.write(`[${filename}] startFixturePreTest ${this._fixture.id} \n`);
         }
-    }
+      }
 
     /**
      * Starting a new test
@@ -240,10 +217,11 @@ class ReportPortal {
      */
 
     async _startStep(time, name = "'->") {
-        // Adding gard of the lentgh of the group name
+
+        // Adding gard of the lentgh of the group name 
         if (name.length > 120) {
             name = name.substring(0, 120);
-        }
+          }
         const options = {
             launchUuid: this.launch.id,
             name: name,
