@@ -130,6 +130,7 @@ class ReportPortal {
         await this._finishFixture(time);
         let fixtureDescription;
         let hasAttribute = false;
+        let options;
         if(name !== "Before Test"){
             fixtureDescription = `
                     ${name.split("\n").map(attr =>{
@@ -141,7 +142,6 @@ class ReportPortal {
         }
         
         if (this.launch !== undefined && this.launch.id !== undefined) {
-            let options;
             options = {
                 launchUuid: this.launch.id,
                 name: name,
