@@ -137,12 +137,12 @@ class ReportPortal {
                   return `* ${attr} \n`;
                 })}
               `.replace(/\n,/g,"\n");
-          name = name.split("\n")[0]
+          name = name.split("\n")[0];
           hasAttribute = true;
         }
         
         if (this.launch !== undefined && this.launch.id !== undefined) {
-          let options
+          let options;
           if (hasAttribute){
             options = {
               launchUuid: this.launch.id,
