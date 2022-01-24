@@ -128,32 +128,48 @@ class ReportPortal {
     async _startFixturePreTest(time, name = "Before Test") {
         //need to close former fixture
         await this._finishFixture(time);
-
-        if (this.launch !== undefined && this.launch.id !== undefined) {
-            const options = {
-                launchUuid: this.launch.id,
-                name: name,
-                startTime: time,
-                type: "before_test",
-            };
-            if (this.suiteName)
-                this._fixture = await this.client.createChildTestItem(
-                    this.projectName,
-                    this.suite.id,
-                    options
-                );
-            else
-                this._fixture = await this.client.createTestItem(
-                    this.projectName,
-                    options
-                );
-            this._itemsIds.push({ type: "FIXTURE", id: this._fixture.id });
-            if (this._debug == true)
-                process.stdout.write(
-                    `[${filename}] startFixturePreTest ${this._fixture.id} \n`
-                );
+        let fixtureDescription;
+        let hasAttribute = false;
+        if(name !== "Before Test"){
+    
+          fixtureDescription = `
+                ${name.split("\n").map(attr =>{
+                  return `* ${attr} \n`;
+                })}
+              `.replace(/\n,/g,"\n");
+          name = name.split("\n")[0]
+          hasAttribute = true;
         }
-    }
+        
+        if (this.launch !== undefined && this.launch.id !== undefined) {
+          let options
+          if (hasAttribute){
+            options = {
+              launchUuid: this.launch.id,
+              name: name,
+              startTime: time,
+              description:fixtureDescription,
+              type: "before_test"
+            };
+          }else {
+            options = {
+              launchUuid: this.launch.id,
+              name: name,
+              startTime: time,
+              type: "before_test"
+            };
+          }
+        
+          if (this.suiteName) this._fixture = await this.client.createChildTestItem(this.projectName, this.suite.id, options);else this._fixture = await this.client.createTestItem(this.projectName, options);
+    
+          this._itemsIds.push({
+            type: "FIXTURE",
+            id: this._fixture.id
+          });
+    
+          if (this._debug == true) process.stdout.write(`[${filename}] startFixturePreTest ${this._fixture.id} \n`);
+        }
+      }
 
     /**
      * Starting a new test
