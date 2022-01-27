@@ -64,6 +64,9 @@ class ConsoleLogAppender extends LogAppender {
     finishLaunch(arg) {
         if (arg !== undefined) LMlog(` [finish launch] ${arg}`);
     }
+    startFixture(arg) {
+        if (arg !== undefined) LMlog(`[before first Test] ${arg}`);
+      }    
     addScreenshot(...args) {
         if (args !== undefined) {
             const msg = args[0][0];
