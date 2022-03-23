@@ -34,9 +34,7 @@ class ReportPortal {
         this._completedLaunch = false;
         this.client = new RPClient(
             {
-                protocol: cliArguments.rprotocol
-                    ? cliArguments.rprotocol
-                    : "https",
+                protocol: cliArguments.rprotocol ? cliArguments.rprotocol : "https",
                 domain: cliArguments.rdomain,
                 apiPath: "/api/v1",
                 //synchronous api

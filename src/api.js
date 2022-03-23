@@ -181,8 +181,8 @@ class API {
 
     async finishTestItem(projectName, testItemId, options) {
         if (this._debug == true) {
-            process.stdout;
-            write(`[${filename}] finishTestItem: [PUT] /${projectName}/item/${testItemId}
+            process.stdout
+                .write(`[${filename}] finishTestItem: [PUT] /${projectName}/item/${testItemId}
             Of launch: ${options.launchUuid}
             With options: ${JSON.stringify(options)}\n `);
         }
@@ -364,9 +364,7 @@ class API {
         const responseData = error.response && error.response.data;
         throw new Error(
             `${errorMessage}${
-                responseData && typeof responseData === "object"
-                    ? `: ${JSON.stringify(responseData)}`
-                    : ""
+                responseData && typeof responseData === "object" ? `: ${JSON.stringify(responseData)}` : ""
             }`
         );
     }
