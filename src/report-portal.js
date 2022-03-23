@@ -1,7 +1,11 @@
 const RPClient = require("./api");
+
 const cliArguments = require("cli-argument-parser").cliArguments;
+
 const { LMdebug, LogActions } = require("./log-appender");
+
 const path = require("path");
+
 const filename = path.basename(__filename);
 
 class ReportPortal {
@@ -14,8 +18,6 @@ class ReportPortal {
             throw new Error("Missing argument --rlaunch/--rlaunch-id");
         if (!cliArguments.rproject)
             throw new Error("Missing argument --rproject");
-
-       
         this.connected = true;
         this._itemsIds = []; //stack of parents
         this.launchName = cliArguments.rlaunch;
@@ -25,21 +27,25 @@ class ReportPortal {
             this._suiteStatus = "passed";
         }
         this._fixture = undefined;
-        this._debug = ( cliArguments.rdebug === "true")? true:false;
+        this._debug = cliArguments.rdebug === "true" ? true : false;
         this._queue = []; //msgs queue
         this._waitingForReply = false;
         this._testStatus = "passed";
         this._completedLaunch = false;
+        this.client = new RPClient(
+            {
+                protocol: cliArguments.rprotocol
+                    ? cliArguments.rprotocol
+                    : "https",
+                domain: cliArguments.rdomain,
+                apiPath: "/api/v1",
+                //synchronous api
+                token: cliArguments.rtoken,
+            },
+            this._debug
+        );
+    } //Verifying the connection to Report Portal
 
-        this.client = new RPClient({
-            protocol: cliArguments.rprotocol ? cliArguments.rprotocol : "https",
-            domain: cliArguments.rdomain,
-            apiPath: "/api/v1", //synchronous api
-            token: cliArguments.rtoken,
-        },this._debug);
-    }
-
-    //Verifying the connection to Report Portal
     async verifyConnection() {
         try {
             await this.client.checkConnect();
@@ -64,46 +70,58 @@ class ReportPortal {
                 description: `Running ${this.launchName} tests`,
             });
             this._completedLaunch = false;
-        } else this.launch = { id: cliArguments["rlaunch-id"] };
+        } else
+            this.launch = {
+                id: cliArguments["rlaunch-id"],
+            };
 
-    // Adding suite with the attributes
-    const launchAttributes = await this.client.getLaunchAttributes(this.projectName, this.launch.id);
-    const FFaddingLaunchInfo = false;
-    if (FFaddingLaunchInfo){
-        if(launchAttributes.length > 0 ){
-            const suiteDescription = `
-            ${launchAttributes.map(attr =>{
-              return `* ${attr.key}: ${attr.value} \n`;
+        // Adding suite with the attributes
+        const launchAttributes = await this.client.getLaunchAttributes(
+            this.projectName,
+            this.launch.id
+        );
+        const FFaddingLaunchInfo = false;
+
+        if (FFaddingLaunchInfo) {
+            if (launchAttributes.length > 0) {
+                const suiteDescription = `
+            ${launchAttributes.map((attr) => {
+                return `* ${attr.key}: ${attr.value} \n`;
             })}
-          `.replace(/\n,/g,"\n");
-      
-          const launchInfoSuite  = await this.client.createTestItem(this.projectName, {
-            launchUuid: this.launch.id,
-            name: "Launch Info:",
-            startTime: time,
-            description: suiteDescription,
-            type: "SUITE"
-          });
-      
-          await this.client.finishTestItem(this.projectName, launchInfoSuite.id, {
-            launchUuid: this.launch.id,
-            status: "passed",
-            endTime: time
-          });
-      
+          `.replace(/\n,/g, "\n");
+                const launchInfoSuite = await this.client.createTestItem(
+                    this.projectName,
+                    {
+                        launchUuid: this.launch.id,
+                        name: "Launch Info:",
+                        startTime: time,
+                        description: suiteDescription,
+                        type: "SUITE",
+                    }
+                );
+                await this.client.finishTestItem(
+                    this.projectName,
+                    launchInfoSuite.id,
+                    {
+                        launchUuid: this.launch.id,
+                        status: "passed",
+                        endTime: time,
+                    }
+                );
+            }
         }
-    }    
-    
-   
 
-        this._itemsIds.push({ type: "LAUNCH", id: this.launch.id });
+        this._itemsIds.push({
+            type: "LAUNCH",
+            id: this.launch.id,
+        });
+
         if (this._debug == true)
             process.stdout.write(
-                `[${filename}]startLaunch id:${this.launch.id}\n`
+                `\n[${filename}]startLaunch id:${this.launch.id}\n`
             );
         if (this.suiteName) await this._startSuite(this.suiteName, time);
     }
-
     /**
      * Creating a new suite
      * @param {*} name The name of the suite
@@ -117,11 +135,14 @@ class ReportPortal {
             type: "SUITE",
         });
         if (this.suite && this.suite.id) {
-            this._itemsIds.push({ type: "SUITE", id: this.suite.id });
+            this._itemsIds.push({
+                type: "SUITE",
+                id: this.suite.id,
+            });
         }
         if (this._debug == true)
             process.stdout.write(
-                `[${filename}]launch ${this.launch.id} startSuite ${this.suite.id}  \n`
+                `\n[${filename}]launch ${this.launch.id} startSuite ${this.suite.id}  \n`
             );
     }
 
@@ -147,14 +168,18 @@ class ReportPortal {
                     this.projectName,
                     options
                 );
-            this._itemsIds.push({ type: "FIXTURE", id: this._fixture.id });
+
+            this._itemsIds.push({
+                type: "FIXTURE",
+                id: this._fixture.id,
+            });
+
             if (this._debug == true)
                 process.stdout.write(
-                    `[${filename}] startFixturePreTest ${this._fixture.id} \n`
+                    `\n[${filename}] startFixturePreTest ${this._fixture.id} \n`
                 );
         }
     }
-
     /**
      * Starting a new test
      * @param {*} name The name of the test
@@ -190,11 +215,10 @@ class ReportPortal {
             });
             if (this._debug == true)
                 process.stdout.write(
-                    `[${filename}] startTest ${this.test.id} \n`
+                    `\n[${filename}] startTest ${this.test.id} \n`
                 );
         }
     }
-
     /**
      * Starting a new step
      * @param {*} name The name of the step
@@ -208,7 +232,6 @@ class ReportPortal {
             type: "STEP",
             hasStats: false,
         };
-
         const stepParent = this.getLastItem();
         if (stepParent) {
             let step = await this.client.createChildTestItem(
@@ -217,10 +240,14 @@ class ReportPortal {
                 options
             );
             if (step !== undefined && step.id !== undefined) {
-                this._itemsIds.push({ type: "STEP", id: step.id });
+                this._itemsIds.push({
+                    type: "STEP",
+                    id: step.id,
+                });
+
                 if (this._debug == true)
                     process.stdout.write(
-                        `[${filename}] startStep ${step.id}\n`
+                        `\n[${filename}] startStep ${step.id}\n`
                     );
             }
         }
@@ -232,7 +259,7 @@ class ReportPortal {
             if (lastItem.type == "STEP") {
                 if (this._debug == true)
                     process.stdout.write(
-                        `[${filename}] finish step. status: ${stepStatus}\n`
+                        `\n[${filename}] finish step. status: ${stepStatus}\n`
                     );
                 await this.client.finishTestItem(
                     this.projectName,
@@ -251,19 +278,21 @@ class ReportPortal {
     async _finishFixture(time) {
         //close all open steps if exist
         if (this._fixture) {
-            await this._finishNestedSteps("passed");
+            this.fxStatus = await this._checkFixtureStatus();
+            await this._finishNestedSteps(this.fxStatus);
             const lastItem = this.getLastItem();
+
             if (lastItem.type == "FIXTURE") {
                 if (this._debug == true)
                     process.stdout.write(
-                        `[${filename}] finish fixture ${lastItem.id} \n`
+                        `\n[${filename}] finish fixture ${lastItem.id} \n`
                     );
                 await this.client.finishTestItem(
                     this.projectName,
                     lastItem.id,
                     {
                         launchUuid: this.launch.id,
-                        status: "passed",
+                        status: this.fxStatus,
                         endTime: time,
                     }
                 );
@@ -271,6 +300,13 @@ class ReportPortal {
                 this._fixture = undefined;
             }
         }
+    }
+    //set status of a fixture based on Error existance in the queue
+    async _checkFixtureStatus() {
+        if (this._queue[0] && this._queue[0].action === "error") {
+            return "failed";
+        }
+        return "passed";
     }
 
     //Finishing a launch
@@ -286,7 +322,7 @@ class ReportPortal {
         if (this.launchName) {
             if (this._debug == true)
                 process.stdout.write(
-                    `[${filename}] finishLaunch. status: ${status}\n`
+                    `\n[${filename}] finishLaunch. status: ${status}\n`
                 );
             await this.client.finishLaunch(this.projectName, this.launch.id, {
                 endTime: time,
@@ -295,7 +331,6 @@ class ReportPortal {
         this._itemsIds = [];
         this._completedLaunch = true;
     }
-
     /**
      * Finishing a test
      * @param {*} testId The id of the test
@@ -312,7 +347,7 @@ class ReportPortal {
         if (item && item.isTest) {
             if (this._debug == true)
                 process.stdout.write(
-                    `[${filename}] finish test ${item.id}. status: ${this._testStatus}\n`
+                    `\n[${filename}] finish test ${item.id}. status: ${this._testStatus}\n`
                 );
             await this.client.finishTestItem(this.projectName, item.id, {
                 launchUuid: this.launch.id,
@@ -347,7 +382,7 @@ class ReportPortal {
         if (this._itemsIds[this._itemsIds.length - 1].type == "SUITE") {
             if (this._debug == true)
                 process.stdout.write(
-                    `[${filename}] finish suite. status: ${status}\n`
+                    `\n[${filename}] finish suite. status: ${status}\n`
                 );
             await this.client.finishTestItem(this.projectName, suiteId, {
                 launchUuid: this.launch.id,
@@ -359,7 +394,6 @@ class ReportPortal {
             this.suiteName = undefined;
         }
     }
-
     /**
      * Sending testing logs
      * @param {*} testId The id of the test
@@ -485,7 +519,7 @@ class ReportPortal {
                     break;
                 default:
                     process.stdout.write(
-                        `[${filename}]ERROR: unknown action type: ${actionType}\n`
+                        `\n[${filename}]ERROR: unknown action type: ${actionType}\n`
                     );
             }
             this._waitingForReply = false;
