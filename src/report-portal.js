@@ -305,10 +305,15 @@ class ReportPortal {
     }
     //set status of a fixture based on Error existance in the queue
     async _checkFixtureStatus() {
-        if (this._queue[0] && this._queue[0].action === "error") {
-            return "failed";
-        }
-        return "passed";
+        try{
+            if(this._queue[0] && this._queue[0].action==='error'){
+              return "failed";
+            }
+          }
+          catch(error){
+            if (this._debug == true) process.stdout.write(`\n[${filename}] Error in getting Fixture status from queue\n`);
+          }
+          return "passed";
     }
 
     //Finishing a launch
