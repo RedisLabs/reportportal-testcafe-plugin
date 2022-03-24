@@ -223,6 +223,10 @@ class ReportPortal {
      */
 
     async _startStep(time, name = "'->") {
+        // Adding gaurd of the length of the group name (on overflow, it will break the launch report)
+        if (name.length > 120) {
+            name = name.substring(0, 120);
+        }
         const options = {
             launchUuid: this.launch.id,
             name: name,
