@@ -8,8 +8,6 @@ const path = require("path");
 
 const filename = path.basename(__filename);
 
-const isLocalUser = cliArguments.rproject.toUpperCase().includes("PERSONAL");
-
 class ReportPortal {
     constructor() {
         process.stdout.write("ReportPortal ctor\n");
@@ -74,8 +72,6 @@ class ReportPortal {
             this.launch = {
                 id: cliArguments["rlaunch-id"],
             };
-
-        if (isLocalUser) this.addLinkToLaunchReport();
 
         // Adding suite with the attributes
         const launchAttributes = await this.client.getLaunchAttributes(
@@ -311,13 +307,13 @@ class ReportPortal {
     async _checkFixtureStatus() {
         try{
             if(this._queue[0] && this._queue[0].action==='error'){
-                return "failed";
+              return "failed";
             }
           }
           catch(error){
             if (this._debug == true) process.stdout.write(`\n[${filename}] Error in getting Fixture status from queue\n`);
-        }
-        return "passed";
+          }
+          return "passed";
     }
 
     //Finishing a launch
@@ -339,9 +335,6 @@ class ReportPortal {
                 endTime: time,
             });
         }
-
-        if (isLocalUser) this.addLinkToLaunchReport();
-
         this._itemsIds = [];
         this._completedLaunch = true;
     }
@@ -539,13 +532,6 @@ class ReportPortal {
             this._waitingForReply = false;
             await this.executeQueue();
         }
-    }
-
-    addLinkToLaunchReport() {
-        const { rprotocol, rdomain, rproject } = cliArguments;
-        process.stdout.write(
-            `Report portal launch --> \x1b[34m${rprotocol}://${rdomain}/ui/#${rproject}/launches/all/${this.launch.id}\x1b[39m \n`
-        );
     }
 }
 
