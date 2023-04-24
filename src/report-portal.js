@@ -190,6 +190,10 @@ class ReportPortal {
                 name: name,
                 startTime: time,
                 type: "STEP",
+                attributes: [{
+                    key: "Framework",
+                    value: "Testcafe"
+                  }]
             };
 
             //Incase the test needs to be under a suite
