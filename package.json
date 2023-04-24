@@ -1,6 +1,6 @@
 {
   "name": "@redislabs/testcafe-reporter-reportportal-plugin",
-  "version": "0.1.10",
+  "version": "0.1.11",
   "private": false,
   "description": "Report Portal TestCafe reporter",
   "repository": "https://github.com/redislabs/reportportal-testcafe-plugin",
