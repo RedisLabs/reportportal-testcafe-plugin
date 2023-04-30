@@ -195,6 +195,14 @@ class ReportPortal {
                     value: "Testcafe"
                   }]
             };
+            const rpsuite = process.env.rpsuite;
+           if (rpsuite !== undefined) {
+               // Add a new attribute to the options
+               options.attributes.push({
+                   key: 'feature',
+                   value: `${rpsuite}`
+               });
+           }
 
             //Incase the test needs to be under a suite
             if (this.suiteName)
