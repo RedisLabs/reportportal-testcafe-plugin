@@ -182,22 +182,20 @@ class ReportPortal {
      */
     async _startTest(time, name = "START TEST") {
         //need to close former fixture
-       await this._finishFixture(time);
-       this._testStatus = STATUS_PASSED;
-       if (this.launch !== undefined && this.launch.id !== undefined) {
-           const options = {
-               launchUuid: this.launch.id,
-               name: name,
-               startTime: time,
-               type: "STEP",
-               attributes: [{
-                   key: "Framework",
-                   value: "Testcafe"
-               }]
-           };
-       
-           // Check if rpsuite exists in the environment variables
-           const rpsuite = process.env.rpsuite;
+        await this._finishFixture(time);
+        this._testStatus = STATUS_PASSED;
+        if (this.launch !== undefined && this.launch.id !== undefined) {
+            const options = {
+                launchUuid: this.launch.id,
+                name: name,
+                startTime: time,
+                type: "STEP",
+                attributes: [{
+                    key: "Framework",
+                    value: "Testcafe"
+                  }]
+            };
+            const rpsuite = process.env.rpsuite;
            if (rpsuite !== undefined) {
                // Add a new attribute to the options
                options.attributes.push({
@@ -205,8 +203,6 @@ class ReportPortal {
                    value: `${rpsuite}`
                });
            }
-       }
-       
 
             //Incase the test needs to be under a suite
             if (this.suiteName)
